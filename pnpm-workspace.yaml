@@ -1,0 +1,3 @@
+autoInstallPeers: false
+allowBuilds:
+  simple-git-hooks: true

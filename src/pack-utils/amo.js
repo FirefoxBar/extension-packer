@@ -1,0 +1,168 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { signAddon } from 'amo-upload';
+import { last } from 'lodash-es';
+import { copyDir, fileExists, getVersion } from '../utils.js';
+import { createZip } from '../zip.js';
+
+let packingSourceCode = null;
+/**
+ * Pack source code respecting .gitignore rules
+ * @param {string} rootPath - Project root path
+ * @returns {Promise<string>} - Path to the created source zip file
+ */
+async function packSourceCode(tempPath, rootPath) {
+  const tempDir = path.join(tempPath, 'source-package');
+  const sourceZipPath = path.join(tempPath, 'source.zip');
+  if (await fileExists(sourceZipPath)) {
+    return sourceZipPath;
+  }
+  const clear = async () => {
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    } catch (err) {
+      console.warn('Could not clean up temporary directory:', err.message);
+    }
+  };
+  try {
+    // Create temp directory
+    await fs.mkdir(tempDir, { recursive: true });
+    // Read .gitignore and create filter function
+    const gitignorePath = path.join(rootPath, '.gitignore');
+    const gitignoreContent = await fs.readFile(gitignorePath, 'utf8');
+    const ignorePatterns = gitignoreContent
+      .split('\n')
+      .map(line => line.trim().replace(/\/$/, ''))
+      .filter(line => line && !line.startsWith('#'));
+    // ignore other files
+    ignorePatterns.push('.git');
+    ignorePatterns.push('docs');
+    ignorePatterns.push('tests');
+    // console.log('ignorePatterns', ignorePatterns);
+    // Simple function to check if a pattern with * matches a string
+    const matchesPattern = (pattern, str) => {
+      if (!pattern.includes('*')) {
+        return pattern === str;
+      }
+      // Escape special regex characters except *
+      const escapedPattern = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+      // Convert * to .* for regex matching
+      const regexPattern = escapedPattern.replace(/\*/g, '.*');
+      const regex = new RegExp(`^${regexPattern}$`);
+      return regex.test(str);
+    };
+    // Read all top-level entries in rootPath
+    const entries = await fs.readdir(rootPath);
+    for (const entry of entries) {
+      if (entry.startsWith('dist_')) {
+        continue;
+      }
+      // Check if this entry should be ignored
+      const shouldIgnore = ignorePatterns.some(pattern =>
+        matchesPattern(pattern, entry),
+      );
+      if (shouldIgnore) {
+        continue;
+      }
+      const srcPath = path.join(rootPath, entry);
+      const destPath = path.join(tempDir, entry);
+      // Check if it's a file or directory
+      const stat = await fs.stat(srcPath);
+      if (stat.isDirectory()) {
+        await copyDir(srcPath, destPath);
+      } else {
+        await fs.copyFile(srcPath, destPath);
+      }
+    }
+    // Create source code zip
+    await createZip(tempDir, sourceZipPath);
+    await clear();
+    return sourceZipPath;
+  } finally {
+    await clear();
+  }
+}
+
+export const waitSubmit = [];
+export async function submitAddon(
+  baseOptions,
+  uploadSourceCode = false,
+  messagePrefix = '',
+  options = {},
+) {
+  const { rootPath, tempPath, amoKey, amoSecret } = baseOptions;
+
+  if (!amoKey) {
+    throw new Error('amoKey not found');
+  }
+  if (!amoSecret) {
+    throw new Error('amoSecret not found');
+  }
+
+  const time = Date.now();
+  if (waitSubmit.length !== 0) {
+    const s = last(waitSubmit) + 10000;
+    if (s > time) {
+      waitSubmit.push(s);
+      await sleep(s - time);
+    } else {
+      waitSubmit.push(time);
+    }
+  } else {
+    waitSubmit.push(time);
+  }
+
+  const opts = {};
+
+  // Pack source codes
+  if (uploadSourceCode) {
+    if (!packingSourceCode) {
+      packingSourceCode = packSourceCode(rootPath, tempPath);
+    }
+    opts.sourceFile = await packingSourceCode;
+  }
+
+  console.log(`[${messagePrefix}] [${options.addonId}] start signAddon`);
+  return signAddon({
+    ...opts,
+    apiKey: amoKey,
+    apiSecret: amoSecret,
+    override: false,
+    pollInterval: 8000,
+    pollRetry: 9999,
+    pollRetryExisting: 9999,
+    retryAfterLimit: 600,
+    ...options,
+    onDebug: type => {
+      if (
+        ![
+          'token-update',
+          'request-start',
+          'request-end',
+          'retry-wait',
+          'upload-file-poll',
+          'wait-poll',
+        ].includes(type)
+      ) {
+        console.log(`[${messagePrefix}] [${options.addonId}] ${type}`);
+      }
+    },
+  });
+}
+
+export default async function ({
+  options,
+  sourcePath,
+  zipPath,
+  browserConfig,
+  extensionConfig,
+}) {
+  return submitAddon(options, true, 'amo', {
+    addonId: extensionConfig.id,
+    addonVersion: await getVersion(sourcePath),
+    channel: 'listed',
+    distFile: zipPath,
+    approvalNotes: getNote(browserConfig),
+  });
+}

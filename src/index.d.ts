@@ -1,0 +1,55 @@
+export interface ReleaseOptions {
+  token: string;
+  gitHubApi: string;
+  gitHubRepo: string;
+  gitHubToken: string;
+  distRootPath: string;
+  browserConfig: string;
+  tagName: string;
+  releasePath: string;
+  extName: string;
+}
+
+export declare function release(options: ReleaseOptions): Promise<void>;
+
+export interface PackOptions {
+  tempPath: string;
+  rootPath: string;
+  releasePath: string;
+  browserConfig: any;
+  extensionConfig: any;
+  msClientID?: string;
+  msApiKey?: string;
+  amoKey?: string;
+  amoSecret?: string;
+  getManifest: (
+    browser: string,
+    options: { dev: boolean; version: string; packer: string },
+  ) => any;
+  getNote: (config: any) => string;
+}
+
+export interface PlatformItem {
+  name: string;
+  dist: string;
+  output?: string;
+  privKey?: string;
+}
+
+export declare function pack(
+  options: PackOptions,
+  platform: Array<PlatformItem>,
+): Promise<void>;
+
+export interface GetSnapshotVersionOptions {
+  token: string;
+  gitHubApi: string;
+  gitHubRepo: string;
+  gitHubToken: string;
+  extName: string;
+  writeTo: string;
+}
+
+export declare function getSnapshotVersion(
+  options: GetSnapshotVersionOptions,
+): Promise<void>;
