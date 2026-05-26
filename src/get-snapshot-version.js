@@ -1,9 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { dirname } from 'node:path';
 
 export async function getSnapshotVersion({
   token,
@@ -46,7 +42,8 @@ export async function getSnapshotVersion({
   const text = await resp.text();
 
   if (/^(\d+)$/.test(text)) {
-    await mkdir(join(__dirname, '../temp/'), {
+    const dir = dirname(writeTo);
+    await mkdir(dir, {
       recursive: true,
     });
     const newVersion = `${versionPrefix}.${text}`;
