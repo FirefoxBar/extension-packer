@@ -49,7 +49,10 @@ export async function pack(options, platform) {
       // 复制一份到dist下面
       await copyDir(dist, thisPack);
       // 重新生成manifest
-      await outputJSON(join(thisPack, 'manifest.json'), getManifest(platform));
+      await outputJSON(
+        join(thisPack, 'manifest.json'),
+        await getManifest(platform),
+      );
       // 打包成zip
       console.log(`[${name}] zip ${thisPack} -> ${zipPath}`);
       await createZip(thisPack, zipPath);

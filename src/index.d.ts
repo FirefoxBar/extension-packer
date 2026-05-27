@@ -32,7 +32,7 @@ export interface PackOptions {
   cwsClientID?: string;
   cwsClientSecret?: string;
   cwsToken?: string;
-  getManifest: (item: PlatformItem) => any;
+  getManifest: (item: PlatformItem) => Promise<any>;
   getNote: (item: PlatformItem) => string;
 }
 
