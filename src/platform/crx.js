@@ -1,9 +1,9 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import crx3 from 'crx3';
-import { outputJSON } from '../utils.js';
+import { outputJSON } from '../utils';
 
-async function packCrx({ options, info, sourcePath, zipPath }) {
+export const crx = async ({ options, info, sourcePath, zipPath }) => {
   const { releasePath, tempPath } = options;
 
   if (!info.privKey) {
@@ -31,6 +31,4 @@ async function packCrx({ options, info, sourcePath, zipPath }) {
   });
 
   return out;
-}
-
-export default packCrx;
+};

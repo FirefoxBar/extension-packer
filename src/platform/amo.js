@@ -3,8 +3,8 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { signAddon } from 'amo-upload';
 import { last } from 'lodash-es';
-import { copyDir, fileExists, getVersion } from '../utils.js';
-import { createZip } from '../zip.js';
+import { copyDir, fileExists, getVersion } from '../utils';
+import { createZip } from '../zip';
 
 let packingSourceCode = null;
 /**
@@ -151,12 +151,11 @@ export async function submitAddon(
   });
 }
 
-export default async function ({ options, info, sourcePath, zipPath }) {
-  return submitAddon(options, true, 'amo', {
+export const amo = async ({ options, info, sourcePath, zipPath }) =>
+  submitAddon(options, true, 'amo', {
     addonId: info.extensionConfig.id,
     addonVersion: await getVersion(sourcePath),
     channel: 'listed',
     distFile: zipPath,
     approvalNotes: getNote(info),
   });
-}

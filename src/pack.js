@@ -1,32 +1,9 @@
-/**
- * 进行多渠道打包
- *
- * dist：原本的输出文件夹
- * dist-pack：用于打包的文件夹
- * dist-pack/{platform}：各个平台的文件夹
- * dist-pack/{platform}.zip：各个平台的打包文件
- * dist-pack/release：其他平台打包输出结果
- * 在这里，打包文件夹统一命名为pack
- */
-
 import { mkdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { rimraf } from 'rimraf';
-import amo from './pack-utils/amo.js';
-import crx from './pack-utils/crx.js';
-import cws from './pack-utils/cws.js';
-import edge from './pack-utils/edge.js';
-import xpi from './pack-utils/xpi.js';
-import { copyDir, getVersion, outputJSON } from './utils.js';
-import { createZip } from './zip.js';
-
-const packUtils = {
-  amo,
-  cws,
-  xpi,
-  edge,
-  crx,
-};
+import { platforms } from './platform';
+import { copyDir, outputJSON } from './utils';
+import { createZip } from './zip';
 
 export async function pack(options, platform) {
   const { tempPath, releasePath, getManifest } = options;
@@ -38,7 +15,7 @@ export async function pack(options, platform) {
    */
   const prepareOnePlatform = async platform => {
     const { name, dist, extensionConfig } = platform;
-    if (typeof packUtils[name] === 'undefined') {
+    if (typeof platforms[name] === 'undefined') {
       console.error(`pack-utils for ${name} not found`);
       return;
     }
@@ -65,12 +42,12 @@ export async function pack(options, platform) {
 
   const packOnePlatform = async (platform, prepare) => {
     const { thisPack, zipPath } = prepare;
-    if (typeof packUtils[platform.name] === 'undefined') {
+    if (typeof platforms[platform.name] === 'undefined') {
       console.error(`pack-utils for ${platform.name} not found`);
       return;
     }
     try {
-      const res = await packUtils[platform.name]({
+      const res = await platforms[platform.name]({
         options,
         info: platform,
         sourcePath: thisPack,

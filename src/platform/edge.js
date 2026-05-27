@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { EdgeAddonsAPI } from '@plasmohq/edge-addons-api';
 
-export default async function ({ options, info, zipPath }) {
+export const edge = async ({ options, info, zipPath }) => {
   const { msClientID, msApiKey, getNote } = options;
   if (!msClientID) {
     throw new Error('msClientID not found');
@@ -23,4 +23,4 @@ export default async function ({ options, info, zipPath }) {
   const publishResp = await client.publish(getNote(info));
   console.log('[edge] publish done', publishResp);
   return JSON.stringify(await client.getPublishStatus(publishResp));
-}
+};

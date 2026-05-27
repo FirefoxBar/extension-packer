@@ -1,6 +1,6 @@
 import { ChromeWebstoreAPI } from '@plasmohq/chrome-webstore-api';
 
-async function packCws({ options, zipPath, info }) {
+export const cws = async ({ options, zipPath, info }) => {
   const { cwsClientID, cwsClientSecret, cwsToken } = options;
   if (!cwsClientID) {
     throw new Error('cwsClientID not found');
@@ -26,6 +26,4 @@ async function packCws({ options, zipPath, info }) {
   });
 
   return JSON.stringify(res);
-}
-
-export default packCws;
+};

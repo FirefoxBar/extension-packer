@@ -3,7 +3,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { getVersion, outputJSON } from '../utils.js';
 import { submitAddon, waitSubmit } from './amo.js';
 
-async function packXpi({ options, info, sourcePath, zipPath }) {
+export const xpi = async ({ options, info, sourcePath, zipPath }) => {
   const { releasePath } = options;
 
   const version = await getVersion(sourcePath);
@@ -38,6 +38,4 @@ async function packXpi({ options, info, sourcePath, zipPath }) {
     extension: info.extensionConfig,
   });
   return outFile;
-}
-
-export default packXpi;
+};
