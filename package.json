@@ -20,9 +20,9 @@
     "@plasmohq/edge-addons-api": "^2.0.0",
     "amo-upload": "^1.1.0",
     "cpr": "^3.0.1",
-    "crx": "^5.0.1",
-    "rimraf": "^6.0.1",
-    "lodash-es": "^4.17.21"
+    "crx3": "^2.0.0",
+    "lodash-es": "^4.17.21",
+    "rimraf": "^6.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.2",
@@ -39,7 +39,7 @@
     ]
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=10"
+    "node": ">=22",
+    "pnpm": ">=11"
   }
 }

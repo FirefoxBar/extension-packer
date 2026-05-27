@@ -1,40 +1,34 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import ChromeExtension from 'crx';
+import crx3 from 'crx3';
 import { outputJSON } from '../utils.js';
-
-async function createCrx(fileContent, keyContent) {
-  if (!keyContent) {
-    throw new Error('No priv key');
-  }
-  const crx = new ChromeExtension({
-    codebase: 'http://localhost:8000/myExtension.crx',
-    privateKey: keyContent,
-  });
-
-  crx.loaded = true;
-
-  const crxBuffer = await crx.pack(fileContent);
-
-  return crxBuffer;
-}
 
 async function packCrx({
   options,
   info,
+  sourcePath,
   zipPath,
   browserConfig,
   extensionConfig,
 }) {
-  const { releasePath } = options;
+  const { releasePath, tempPath } = options;
 
-  const fileContent = await readFile(zipPath);
-  if (typeof process.env[extensionConfig.priv_key] === 'undefined') {
-    throw new Error(`${extensionConfig.priv_key} not found`);
+  if (!info.privKey) {
+    throw new Error('privKey not found');
   }
-  const content = await createCrx(fileContent, info.privKey);
+
+  await writeFile(join(tempPath, 'crx_key.pem'), info.privKey, {
+    encoding: 'utf-8',
+  });
+
   const out = join(releasePath, info.output);
-  await writeFile(out, content);
+
+  await crx3([join(sourcePath, 'manifest.json')], {
+    keyPath: join(tempPath, 'crx_key.pem'),
+    crxPath: out,
+    zipPath: zipPath,
+    crxURL: 'http://127.0.0.1:8080/example-extension.crx',
+  });
 
   const infoFile = join(releasePath, `${info.output}-config.json`);
   await outputJSON(infoFile, {
