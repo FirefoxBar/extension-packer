@@ -55,5 +55,3 @@ export async function getSnapshotVersion({
     console.log(`Invalid version: ${text}`);
   }
 }
-
-main();
