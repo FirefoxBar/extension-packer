@@ -38,7 +38,7 @@ async function packXpi({
   });
 
   console.log(`[xpi] [${extensionConfig.id}] downloaded to ${outFile}`);
-  const infoFile = join(releasePath, `${fileName}-config.json`);
+  const infoFile = join(releasePath, `${info.output}-config.json`);
   await outputJSON(infoFile, {
     id: extensionConfig.id,
     browser: browserConfig,
