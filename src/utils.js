@@ -67,7 +67,7 @@ export function copyDir(source, target) {
   });
 }
 
-export async function getVersion(path) {
-  const manifest = await readJSON(join(path, 'manifest.json'));
+export async function getVersion(p) {
+  const manifest = await readJSON(path.join(p, 'manifest.json'));
   return manifest.version;
 }
