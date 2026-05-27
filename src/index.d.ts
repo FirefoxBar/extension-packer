@@ -12,26 +12,6 @@ export interface ReleaseOptions {
 
 export declare function release(options: ReleaseOptions): Promise<void>;
 
-export interface PackOptions {
-  tempPath: string;
-  rootPath: string;
-  releasePath: string;
-  // browserConfig: any;
-  // extensionConfig: any;
-  msClientID?: string;
-  msApiKey?: string;
-  amoKey?: string;
-  amoSecret?: string;
-  cwsClientID?: string;
-  cwsClientSecret?: string;
-  cwsToken?: string;
-  getManifest: (
-    browser: string,
-    options: { dev: boolean; version: string; packer: string },
-  ) => any;
-  getNote: (config: any) => string;
-}
-
 export interface PlatformItem {
   name: string;
   dist: string;
@@ -39,6 +19,21 @@ export interface PlatformItem {
   privKey?: string;
   browserConfig?: any;
   extensionConfig?: any;
+}
+
+export interface PackOptions {
+  tempPath: string;
+  rootPath: string;
+  releasePath: string;
+  msClientID?: string;
+  msApiKey?: string;
+  amoKey?: string;
+  amoSecret?: string;
+  cwsClientID?: string;
+  cwsClientSecret?: string;
+  cwsToken?: string;
+  getManifest: (item: PlatformItem) => any;
+  getNote: (item: PlatformItem) => string;
 }
 
 export declare function pack(

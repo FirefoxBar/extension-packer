@@ -49,15 +49,7 @@ export async function pack(options, platform) {
       // 复制一份到dist下面
       await copyDir(dist, thisPack);
       // 重新生成manifest
-      const version = await getVersion(thisPack);
-      await outputJSON(
-        join(thisPack, 'manifest.json'),
-        getManifest(extensionConfig.browser, {
-          dev: false,
-          version,
-          packer: name,
-        }),
-      );
+      await outputJSON(join(thisPack, 'manifest.json'), getManifest(platform));
       // 打包成zip
       console.log(`[${name}] zip ${thisPack} -> ${zipPath}`);
       await createZip(thisPack, zipPath);
