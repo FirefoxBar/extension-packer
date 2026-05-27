@@ -1,23 +1,24 @@
 import { ChromeWebstoreAPI } from '@plasmohq/chrome-webstore-api';
 
-async function packCws({ zipPath, extensionConfig }) {
-  if (!process.env.CWS_CLIENT_ID) {
-    return Promise.reject(new Error('CWS_CLIENT_ID not found'));
+async function packCws({ options, zipPath, extensionConfig }) {
+  const { cwsClientID, cwsClientSecret, cwsToken } = options;
+  if (!cwsClientID) {
+    throw new Error('cwsClientID not found');
   }
-  if (!process.env.CWS_CLIENT_SECRET) {
-    return Promise.reject(new Error('CWS_CLIENT_SECRET not found'));
+  if (!cwsClientSecret) {
+    throw new Error('cwsClientSecret not found');
   }
-  if (!process.env.CWS_TOKEN) {
-    return Promise.reject(new Error('CWS_TOKEN not found'));
+  if (!cwsToken) {
+    throw new Error('cwsToken not found');
   }
 
   const id = extensionConfig.id;
 
   const client = new ChromeWebstoreAPI({
     extId: id,
-    refreshToken: process.env.CWS_TOKEN,
-    clientId: process.env.CWS_CLIENT_ID,
-    clientSecret: process.env.CWS_CLIENT_SECRET,
+    refreshToken: cwsToken,
+    clientId: cwsClientID,
+    clientSecret: cwsClientSecret,
   });
 
   const res = await client.submit({

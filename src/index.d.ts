@@ -22,6 +22,9 @@ export interface PackOptions {
   msApiKey?: string;
   amoKey?: string;
   amoSecret?: string;
+  cwsClientID?: string;
+  cwsClientSecret?: string;
+  cwsToken?: string;
   getManifest: (
     browser: string,
     options: { dev: boolean; version: string; packer: string },
