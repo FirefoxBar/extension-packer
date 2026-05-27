@@ -1,6 +1,6 @@
 import { ChromeWebstoreAPI } from '@plasmohq/chrome-webstore-api';
 
-async function packCws({ options, zipPath, extensionConfig }) {
+async function packCws({ options, zipPath, info }) {
   const { cwsClientID, cwsClientSecret, cwsToken } = options;
   if (!cwsClientID) {
     throw new Error('cwsClientID not found');
@@ -12,7 +12,7 @@ async function packCws({ options, zipPath, extensionConfig }) {
     throw new Error('cwsToken not found');
   }
 
-  const id = extensionConfig.id;
+  const id = info.extensionConfig.id;
 
   const client = new ChromeWebstoreAPI({
     extId: id,

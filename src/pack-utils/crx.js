@@ -3,14 +3,7 @@ import { join } from 'node:path';
 import crx3 from 'crx3';
 import { outputJSON } from '../utils.js';
 
-async function packCrx({
-  options,
-  info,
-  sourcePath,
-  zipPath,
-  browserConfig,
-  extensionConfig,
-}) {
+async function packCrx({ options, info, sourcePath, zipPath }) {
   const { releasePath, tempPath } = options;
 
   if (!info.privKey) {
@@ -32,9 +25,9 @@ async function packCrx({
 
   const infoFile = join(releasePath, `${info.output}-config.json`);
   await outputJSON(infoFile, {
-    id: extensionConfig.id,
-    browser: browserConfig,
-    extension: extensionConfig,
+    id: info.extensionConfig.id,
+    browser: info.browserConfig,
+    extension: info.extensionConfig,
   });
 
   return out;

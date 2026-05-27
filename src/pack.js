@@ -29,26 +29,25 @@ const packUtils = {
 };
 
 export async function pack(options, platform) {
-  const { tempPath, releasePath, browserConfig, extensionConfig, getManifest } =
-    options;
+  const { tempPath, releasePath, getManifest } = options;
 
   /**
    * 打包一个平台的产物
    * @param {*} platform
-   * @param {*} extensionConfig 对应extension.json中的单项配置
    * @returns
    */
-  const prepareOnePlatform = async (platform, extensionConfig) => {
-    if (typeof packUtils[platform.name] === 'undefined') {
-      console.error(`pack-utils for ${platform.name} not found`);
+  const prepareOnePlatform = async platform => {
+    const { name, dist, extensionConfig } = platform;
+    if (typeof packUtils[name] === 'undefined') {
+      console.error(`pack-utils for ${name} not found`);
       return;
     }
-    const dirName = `${platform.name}_${extensionConfig.browser}`;
+    const dirName = `${name}_${extensionConfig.browser}`;
     const thisPack = join(tempPath, dirName);
     const zipPath = join(tempPath, `${dirName}.zip`);
     try {
       // 复制一份到dist下面
-      await copyDir(platform.dist, thisPack);
+      await copyDir(dist, thisPack);
       // 重新生成manifest
       const version = await getVersion(thisPack);
       await outputJSON(
@@ -56,25 +55,20 @@ export async function pack(options, platform) {
         getManifest(extensionConfig.browser, {
           dev: false,
           version,
-          packer: platform.name,
+          packer: name,
         }),
       );
       // 打包成zip
-      console.log(`[${platform.name}] zip ${thisPack} -> ${zipPath}`);
+      console.log(`[${name}] zip ${thisPack} -> ${zipPath}`);
       await createZip(thisPack, zipPath);
     } catch (e) {
-      console.error(`[${platform.name}] prepare error`);
+      console.error(`[${name}] prepare error`);
       console.error(e);
     }
     return { dirName, thisPack, zipPath };
   };
 
-  const packOnePlatform = async (
-    platform,
-    prepare,
-    browserConfig,
-    extensionConfig,
-  ) => {
+  const packOnePlatform = async (platform, prepare) => {
     const { thisPack, zipPath } = prepare;
     if (typeof packUtils[platform.name] === 'undefined') {
       console.error(`pack-utils for ${platform.name} not found`);
@@ -86,8 +80,6 @@ export async function pack(options, platform) {
         info: platform,
         sourcePath: thisPack,
         zipPath,
-        browserConfig,
-        extensionConfig,
       });
       console.log(`[${platform.name}] pack success: ${res}`);
     } catch (e) {
@@ -114,12 +106,8 @@ export async function pack(options, platform) {
   const queue = [];
 
   for (const one of platform) {
-    const platformConfig = extensionConfig[one.name];
-    for (const item of platformConfig) {
-      const browser = browserConfig[item.browser];
-      const prepare = await prepareOnePlatform(one, item);
-      queue.push(packOnePlatform(one, { ...prepare }, browser, item));
-    }
+    const prepare = await prepareOnePlatform(one);
+    queue.push(packOnePlatform(one, { ...prepare }));
   }
 
   await Promise.all(queue);

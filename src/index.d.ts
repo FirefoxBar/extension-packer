@@ -16,8 +16,8 @@ export interface PackOptions {
   tempPath: string;
   rootPath: string;
   releasePath: string;
-  browserConfig: any;
-  extensionConfig: any;
+  // browserConfig: any;
+  // extensionConfig: any;
   msClientID?: string;
   msApiKey?: string;
   amoKey?: string;
@@ -37,6 +37,8 @@ export interface PlatformItem {
   dist: string;
   output?: string;
   privKey?: string;
+  browserConfig?: any;
+  extensionConfig?: any;
 }
 
 export declare function pack(

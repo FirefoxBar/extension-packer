@@ -3,14 +3,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { getVersion, outputJSON } from '../utils.js';
 import { submitAddon, waitSubmit } from './amo.js';
 
-async function packXpi({
-  options,
-  info,
-  sourcePath,
-  zipPath,
-  browserConfig,
-  extensionConfig,
-}) {
+async function packXpi({ options, info, sourcePath, zipPath }) {
   const { releasePath } = options;
 
   const version = await getVersion(sourcePath);
@@ -21,7 +14,7 @@ async function packXpi({
     const nextRun = last + 60000;
     if (Date.now() < nextRun) {
       console.log(
-        `[xpi] [${extensionConfig.id}] wait ${nextRun - Date.now()}ms`,
+        `[xpi] [${info.extensionConfig.id}] wait ${nextRun - Date.now()}ms`,
       );
       await sleep(nextRun - Date.now());
     }
@@ -30,19 +23,19 @@ async function packXpi({
   const outFile = join(releasePath, info.output);
 
   await submitAddon(options, false, 'xpi', {
-    addonId: extensionConfig.id,
+    addonId: info.extensionConfig.id,
     addonVersion: version,
     channel: 'unlisted',
     distFile: zipPath,
     output: outFile,
   });
 
-  console.log(`[xpi] [${extensionConfig.id}] downloaded to ${outFile}`);
+  console.log(`[xpi] [${info.extensionConfig.id}] downloaded to ${outFile}`);
   const infoFile = join(releasePath, `${info.output}-config.json`);
   await outputJSON(infoFile, {
-    id: extensionConfig.id,
-    browser: browserConfig,
-    extension: extensionConfig,
+    id: info.extensionConfig.id,
+    browser: info.browserConfig,
+    extension: info.extensionConfig,
   });
   return outFile;
 }

@@ -151,18 +151,12 @@ export async function submitAddon(
   });
 }
 
-export default async function ({
-  options,
-  sourcePath,
-  zipPath,
-  browserConfig,
-  extensionConfig,
-}) {
+export default async function ({ options, info, sourcePath, zipPath }) {
   return submitAddon(options, true, 'amo', {
-    addonId: extensionConfig.id,
+    addonId: info.extensionConfig.id,
     addonVersion: await getVersion(sourcePath),
     channel: 'listed',
     distFile: zipPath,
-    approvalNotes: getNote(browserConfig),
+    approvalNotes: getNote(info),
   });
 }
