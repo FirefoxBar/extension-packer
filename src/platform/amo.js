@@ -157,5 +157,5 @@ export const amo = async ({ options, info, sourcePath, zipPath }) =>
     addonVersion: await getVersion(sourcePath),
     channel: 'listed',
     distFile: zipPath,
-    approvalNotes: getNote(info),
+    approvalNotes: options.getNote(info),
   });
