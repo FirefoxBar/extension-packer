@@ -10,9 +10,10 @@ let packingSourceCode = null;
 /**
  * Pack source code respecting .gitignore rules
  * @param {string} rootPath - Project root path
+ * @param {string} tempPath - Temp path
  * @returns {Promise<string>} - Path to the created source zip file
  */
-async function packSourceCode(tempPath, rootPath) {
+async function packSourceCode(rootPath, tempPath) {
   const tempDir = path.join(tempPath, 'source-package');
   const sourceZipPath = path.join(tempPath, 'source.zip');
   if (await fileExists(sourceZipPath)) {
