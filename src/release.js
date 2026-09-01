@@ -17,7 +17,7 @@ export async function release({
   gitHubApi,
   gitHubRepo,
   gitHubToken,
-  distRootPath,
+  version,
   browserConfig,
   tagName,
   releasePath,
@@ -33,22 +33,6 @@ export async function release({
   }
   if (!gitHubToken) {
     console.log('gitHubToken not found');
-    return;
-  }
-
-  // Get version
-  let version = '';
-  const browserList = Object.keys(browserConfig);
-  for (const browser of browserList) {
-    const path = join(distRootPath, browser);
-    if (await fileExists(join(path, 'manifest.json'))) {
-      version = await getVersion(path);
-      console.log(`Get version from ${path}`);
-      break;
-    }
-  }
-  if (!version) {
-    console.log('version not found');
     return;
   }
 
