@@ -158,6 +158,7 @@ export async function release({
     content: '',
     config: undefined,
     min_version: get(x, 'config.extension.min_version'),
+    android_min_version: get(x, 'config.extension.android_min_version'),
   }));
   console.log('notify the update server', notifyAssets);
   const params = new URLSearchParams({
