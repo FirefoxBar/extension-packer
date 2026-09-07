@@ -20,7 +20,7 @@ export const edge = async ({ options, info, zipPath }) => {
   console.log('[edge] upload done', uploadResp);
   const uploadStatus = await client.waitForUpload(uploadResp);
   console.log('[edge] upload check success', uploadStatus);
-  const publishResp = await client.publish(getNote(info));
+  const publishResp = await client.publish(getNote(info).replace(/\n/g, ' '));
   console.log('[edge] publish done', publishResp);
   return JSON.stringify(await client.getPublishStatus(publishResp));
 };

@@ -18,7 +18,6 @@ export async function release({
   gitHubRepo,
   gitHubToken,
   version,
-  browserConfig,
   tagName,
   releasePath,
   extName,
@@ -37,7 +36,7 @@ export async function release({
   }
 
   // Git basic infos
-  const gitName = repo.split('/');
+  const gitName = gitHubRepo.split('/');
   const gitHubBaseURL = `${gitHubApi}/repos/${gitHubRepo}`;
   const gitHubApiHeader = {
     Accept: 'application/vnd.github+json',
