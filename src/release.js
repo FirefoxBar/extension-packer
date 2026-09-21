@@ -65,7 +65,7 @@ export async function release({
       hash: hash(fileContent),
       content: fileContent,
       config: info,
-      url: `https://github.com/${repo}/releases/download/${tagName}/${file}`,
+      url: `https://github.com/${gitHubRepo}/releases/download/${tagName}/${file}`,
     });
   }
 
