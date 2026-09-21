@@ -1,0 +1,18 @@
+{
+  "name": "@fxb/extension-packer",
+  "version": "1.0.0",
+  "description": "Extension Packer",
+  "author": "ShuangYa",
+  "license": "GPL-2.0",
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FirefoxBar/extension-packer.git"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  }
+}
