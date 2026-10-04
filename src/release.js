@@ -21,6 +21,7 @@ export async function release({
   tagName,
   releasePath,
   extName,
+  getDescription,
 }) {
   if (!gitHubRepo) {
     console.log('gitHubRepo not found');
@@ -83,6 +84,7 @@ export async function release({
   if (!releaseInfo) {
     console.log('Release not exists, creating...');
     try {
+      const desc = getDescription ? getDescription({ assets }) : '';
       const res = await fetch(`${gitHubBaseURL}/releases`, {
         method: 'POST',
         headers: gitHubApiHeader,
@@ -91,7 +93,7 @@ export async function release({
           repo: gitName[1],
           tag_name: tagName,
           name: version,
-          body: '',
+          body: desc,
           draft: false,
           prerelease: false,
         }),
@@ -136,14 +138,19 @@ export async function release({
   // Update release description
   try {
     console.log('Update release description...');
+    const fetchBody = {
+      tag_name: tagName,
+      name: version,
+      draft: false,
+      prerelease: false,
+    };
+    const desc = getDescription ? getDescription({ assets, current: releaseInfo }) : '';
+    if (desc) {
+      fetchBody.body = desc;
+    }
     await fetch(`${gitHubBaseURL}/releases/${releaseId}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        tag_name: tagName,
-        name: version,
-        draft: false,
-        prerelease: false,
-      }),
+      body: JSON.stringify(fetchBody),
       headers: gitHubApiHeader,
     });
     console.log('success');
