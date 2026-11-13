@@ -173,11 +173,12 @@ export async function release({
     version,
     assets: JSON.stringify(notifyAssets),
   });
-  await fetch('https://server-api.sylibs.com/ext/update.php', {
+  const updateRes = await fetch('https://server-api.sylibs.com/ext/update.php', {
     method: 'POST',
     body: params.toString(),
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   });
+  console.log('update server response', await updateRes.text());
 }
