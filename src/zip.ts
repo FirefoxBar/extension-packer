@@ -1,12 +1,16 @@
-import { execFile } from 'node:child_process';
+import { type ExecFileOptions, execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-function quotePath(p) {
-  return '"' + p + '"';
+function quotePath(p: string): string {
+  return `"${p}"`;
 }
 
-function exec(command, args, options) {
+function exec(
+  command: string,
+  args: string[],
+  options: ExecFileOptions,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     execFile(command, args, options, err => {
       if (err) {
@@ -18,11 +22,14 @@ function exec(command, args, options) {
   });
 }
 
-export async function createZip(inPath, outPath) {
+export async function createZip(
+  inPath: string,
+  outPath: string,
+): Promise<void> {
   if (process.platform === 'win32') {
     try {
       await fs.rm(outPath, { recursive: true, maxRetries: 3 });
-    } catch (e) {
+    } catch {
       // ignore
     }
     return exec(

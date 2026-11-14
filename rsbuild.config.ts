@@ -7,7 +7,7 @@ const require = /*#__PURE__*/ __rslib_shim_module__.createRequire(/*#__PURE__*/ 
 export default defineConfig({
   source: {
     entry: {
-      index: './src/action.js',
+      index: './src/action.ts',
     },
   },
   output: {

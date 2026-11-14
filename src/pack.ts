@@ -1,20 +1,30 @@
 import { mkdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { rimraf } from 'rimraf';
-import { platforms } from './platform';
-import { copyDir, outputJSON } from './utils';
-import { createZip } from './zip';
+import { platforms } from './platform/index.js';
+import type { PackOptions, PlatformItem } from './types.js';
+import { copyDir, outputJSON } from './utils.js';
+import { createZip } from './zip.js';
 
-export async function pack(options, platform) {
+interface PreparedPlatform {
+  dirName: string;
+  thisPack: string;
+  zipPath: string;
+}
+
+export async function pack(
+  options: PackOptions,
+  platform: PlatformItem[],
+): Promise<void> {
   const { tempPath, releasePath, getManifest } = options;
 
   /**
    * 打包一个平台的产物
-   * @param {*} platform
-   * @returns
    */
-  const prepareOnePlatform = async platform => {
-    const { name, dist, extensionConfig } = platform;
+  const prepareOnePlatform = async (
+    item: PlatformItem,
+  ): Promise<PreparedPlatform | undefined> => {
+    const { name, dist, extensionConfig } = item;
     if (typeof platforms[name] === 'undefined') {
       console.error(`pack-utils for ${name} not found`);
       return;
@@ -28,7 +38,7 @@ export async function pack(options, platform) {
       // 重新生成manifest
       await outputJSON(
         join(thisPack, 'manifest.json'),
-        await getManifest(platform),
+        await getManifest(item),
       );
       // 打包成zip
       console.log(`[${name}] zip ${thisPack} -> ${zipPath}`);
@@ -40,27 +50,31 @@ export async function pack(options, platform) {
     return { dirName, thisPack, zipPath };
   };
 
-  const packOnePlatform = async (platform, prepare) => {
+  const packOnePlatform = async (
+    item: PlatformItem,
+    prepare: PreparedPlatform,
+  ): Promise<void> => {
     const { thisPack, zipPath } = prepare;
-    if (typeof platforms[platform.name] === 'undefined') {
-      console.error(`pack-utils for ${platform.name} not found`);
+    const packer = platforms[item.name];
+    if (typeof packer === 'undefined') {
+      console.error(`pack-utils for ${item.name} not found`);
       return;
     }
     try {
-      const res = await platforms[platform.name]({
+      const res = await packer({
         options,
-        info: platform,
+        info: item,
         sourcePath: thisPack,
         zipPath,
       });
-      console.log(`[${platform.name}] pack success: ${res}`);
+      console.log(`[${item.name}] pack success: ${res}`);
     } catch (e) {
-      console.error(`[${platform.name}] pack error`);
+      console.error(`[${item.name}] pack error`);
       console.error(e);
     }
     try {
       await unlink(zipPath);
-    } catch (_) {
+    } catch {
       // ignore
     }
   };
@@ -75,11 +89,14 @@ export async function pack(options, platform) {
     recursive: true,
   });
 
-  const queue = [];
+  const queue: Promise<void>[] = [];
 
   for (const one of platform) {
     const prepare = await prepareOnePlatform(one);
-    queue.push(packOnePlatform(one, { ...prepare }));
+    if (typeof prepare === 'undefined') {
+      continue;
+    }
+    queue.push(packOnePlatform(one, prepare));
   }
 
   await Promise.all(queue);

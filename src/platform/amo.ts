@@ -2,18 +2,33 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { signAddon } from 'amo-upload';
-import { last } from 'lodash-es';
-import { copyDir, fileExists, getVersion } from '../utils';
-import { createZip } from '../zip';
+import type { PackOptions, PlatformContext } from '../types.js';
+import { copyDir, fileExists, getVersion } from '../utils.js';
+import { createZip } from '../zip.js';
 
-let packingSourceCode = null;
+type SignAddonParam = Parameters<typeof signAddon>[0];
+
+export interface SubmitAddonOptions
+  extends Omit<
+    Partial<SignAddonParam>,
+    'apiKey' | 'apiSecret' | 'addonId' | 'addonVersion'
+  > {
+  addonId: string;
+  addonVersion: string;
+}
+
+let packingSourceCode: Promise<string> | null = null;
+
 /**
  * Pack source code respecting .gitignore rules
- * @param {string} rootPath - Project root path
- * @param {string} tempPath - Temp path
- * @returns {Promise<string>} - Path to the created source zip file
+ * @param rootPath - Project root path
+ * @param tempPath - Temp path
+ * @returns Path to the created source zip file
  */
-async function packSourceCode(rootPath, tempPath) {
+async function packSourceCode(
+  rootPath: string,
+  tempPath: string,
+): Promise<string> {
   const tempDir = path.join(tempPath, 'source-package');
   const sourceZipPath = path.join(tempPath, 'source.zip');
   if (await fileExists(sourceZipPath)) {
@@ -23,7 +38,10 @@ async function packSourceCode(rootPath, tempPath) {
     try {
       await fs.rm(tempDir, { recursive: true, force: true });
     } catch (err) {
-      console.warn('Could not clean up temporary directory:', err.message);
+      console.warn(
+        'Could not clean up temporary directory:',
+        (err as Error).message,
+      );
     }
   };
   try {
@@ -42,7 +60,7 @@ async function packSourceCode(rootPath, tempPath) {
     ignorePatterns.push('tests');
     // console.log('ignorePatterns', ignorePatterns);
     // Simple function to check if a pattern with * matches a string
-    const matchesPattern = (pattern, str) => {
+    const matchesPattern = (pattern: string, str: string): boolean => {
       if (!pattern.includes('*')) {
         return pattern === str;
       }
@@ -85,13 +103,14 @@ async function packSourceCode(rootPath, tempPath) {
   }
 }
 
-export const waitSubmit = [];
+export const waitSubmit: number[] = [];
+
 export async function submitAddon(
-  baseOptions,
+  baseOptions: PackOptions,
   uploadSourceCode = false,
   messagePrefix = '',
-  options = {},
-) {
+  options: SubmitAddonOptions,
+): Promise<string> {
   const { rootPath, tempPath, amoKey, amoSecret } = baseOptions;
 
   if (!amoKey) {
@@ -103,7 +122,7 @@ export async function submitAddon(
 
   const time = Date.now();
   if (waitSubmit.length !== 0) {
-    const s = last(waitSubmit) + 10000;
+    const s = waitSubmit[waitSubmit.length - 1] + 10000;
     if (s > time) {
       waitSubmit.push(s);
       await sleep(s - time);
@@ -114,7 +133,7 @@ export async function submitAddon(
     waitSubmit.push(time);
   }
 
-  const opts = {};
+  const opts: Partial<SignAddonParam> = {};
 
   // Pack source codes
   if (uploadSourceCode) {
@@ -129,6 +148,7 @@ export async function submitAddon(
     ...opts,
     apiKey: amoKey,
     apiSecret: amoSecret,
+    apiUrlPrefix: 'https://addons.mozilla.org',
     override: false,
     pollInterval: 8000,
     pollRetry: 9999,
@@ -152,7 +172,12 @@ export async function submitAddon(
   });
 }
 
-export const amo = async ({ options, info, sourcePath, zipPath }) =>
+export const amo = async ({
+  options,
+  info,
+  sourcePath,
+  zipPath,
+}: PlatformContext): Promise<string> =>
   submitAddon(options, true, 'amo', {
     addonId: info.extensionConfig.id,
     addonVersion: await getVersion(sourcePath),

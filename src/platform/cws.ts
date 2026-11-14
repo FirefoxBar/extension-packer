@@ -1,6 +1,11 @@
 import { ChromeWebstoreAPI } from '@plasmohq/chrome-webstore-api';
+import type { PlatformContext } from '../types.js';
 
-export const cws = async ({ options, zipPath, info }) => {
+export const cws = async ({
+  options,
+  zipPath,
+  info,
+}: PlatformContext): Promise<string> => {
   const { cwsClientID, cwsClientSecret, cwsToken } = options;
   if (!cwsClientID) {
     throw new Error('cwsClientID not found');

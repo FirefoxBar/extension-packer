@@ -1,34 +1,31 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { Octokit } from '@octokit/rest';
+import type { GetSnapshotVersionOptions } from './types.js';
 
 export async function getSnapshotVersion({
   token,
-  gitHubApi,
-  gitHubRepo,
-  gitHubToken,
+  ghApi,
+  ghRepo,
+  ghToken,
   extName,
   writeTo,
-}) {
+}: GetSnapshotVersionOptions): Promise<void> {
   if (!token) {
     return;
   }
 
-  // const pkgJson = await readJSON(join(__dirname, '../package.json'));
-  // const { version: versionPrefix } = pkgJson;
-  // console.log('Get latest release version from package.json');
-
   // Get latest release version
-  const gitHubBaseURL = `${gitHubApi}/repos/${gitHubRepo}`;
-  const gitHubApiHeader = {
-    Accept: 'application/vnd.github+json',
-    Authorization: `Bearer ${gitHubToken}`,
-    'X-GitHub-Api-Version': '2022-11-28',
-    'Content-Type': 'application/json',
-  };
-  const latestRelease = await fetch(`${gitHubBaseURL}/releases/latest`, {
-    headers: gitHubApiHeader,
+  const [owner, repo] = ghRepo.split('/');
+  const octokit = new Octokit({
+    auth: ghToken,
+    baseUrl: ghApi,
   });
-  const versionPrefix = (await latestRelease.json()).tag_name.replace(/^v/, '');
+  const latestRelease = await octokit.rest.repos.getLatestRelease({
+    owner,
+    repo,
+  });
+  const versionPrefix = latestRelease.data.tag_name.replace(/^v/, '');
 
   // Get remote version
   const params = new URLSearchParams();
@@ -37,7 +34,7 @@ export async function getSnapshotVersion({
   params.append('token', token);
 
   const resp = await fetch(
-    'https://server-api.sylibs.com/ext/snapshot.php?' + params.toString(),
+    `https://server-api.sylibs.com/ext/snapshot.php?${params.toString()}`,
   );
   const text = await resp.text();
 

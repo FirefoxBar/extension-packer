@@ -1,10 +1,20 @@
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
+import type { PlatformContext } from '../types.js';
 import { getVersion, outputJSON } from '../utils.js';
 import { submitAddon, waitSubmit } from './amo.js';
 
-export const xpi = async ({ options, info, sourcePath, zipPath }) => {
+export const xpi = async ({
+  options,
+  info,
+  sourcePath,
+  zipPath,
+}: PlatformContext): Promise<string> => {
   const { releasePath } = options;
+
+  if (!info.output) {
+    throw new Error('output not found');
+  }
 
   const version = await getVersion(sourcePath);
 
