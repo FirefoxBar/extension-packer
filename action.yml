@@ -1,0 +1,12 @@
+name: 'Extension Packer'
+description: 'Extension Packer'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+inputs:
+  script:
+    description: 'script path'
+    required: true
+runs:
+  using: 'node24'
+  main: 'index.js'
