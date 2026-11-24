@@ -22,7 +22,7 @@ const UPDATE_WORKFLOW = {
 interface TriggerUpdateWorkflowOptions {
   ghApi: string;
   appId: number | string;
-  appSecret: string;
+  privateKey: string;
   /** Repo used to check the app installation */
   installRepo: { owner: string; repo: string };
   extName: string;
@@ -73,7 +73,7 @@ function parseUpdateRepo(): { owner: string; repo: string } {
 async function triggerUpdateWorkflow({
   ghApi,
   appId,
-  appSecret,
+  privateKey,
   installRepo,
   extName,
   version,
@@ -85,7 +85,7 @@ async function triggerUpdateWorkflow({
     baseUrl: ghApi,
     auth: {
       appId: typeof appId === 'string' ? appId.trim() : appId,
-      privateKey: appSecret.replace(/\\n/g, '\n').trim(),
+      privateKey: privateKey.replace(/\\n/g, '\n').trim(),
     },
   });
 
@@ -127,7 +127,7 @@ async function triggerUpdateWorkflow({
 
 export async function release({
   ghAppId,
-  ghAppSecret,
+  ghAppPrivateKey,
   ghApi,
   ghRepo,
   ghToken,
@@ -146,8 +146,8 @@ export async function release({
     console.log('ghAppId not found');
     return;
   }
-  if (!ghAppSecret) {
-    console.log('ghAppSecret not found');
+  if (!ghAppPrivateKey) {
+    console.log('ghAppPrivateKey not found');
     return;
   }
   if (!ghToken) {
@@ -303,7 +303,7 @@ export async function release({
     await triggerUpdateWorkflow({
       ghApi,
       appId: ghAppId,
-      appSecret: ghAppSecret,
+      privateKey: ghAppPrivateKey,
       installRepo: { owner, repo },
       extName,
       version,

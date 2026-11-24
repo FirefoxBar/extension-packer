@@ -74,7 +74,7 @@ export interface ReleaseOptions {
   /** GitHub App ID (the app must be installed on the repo's organization) */
   ghAppId: number | string;
   /** GitHub App private key (supports both real newlines and `\n` escapes) */
-  ghAppSecret: string;
+  ghAppPrivateKey: string;
   ghApi: string;
   ghRepo: string;
   ghToken: string;
